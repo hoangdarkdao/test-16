@@ -1,0 +1,18 @@
+[
+    {
+        "algorithm": "{}",
+        "function": "def select_neighbor(archive: List[Tuple[np.ndarray, Tuple[float, float]]], instance: np.ndarray, distance_matrix_1: np.ndarray, distance_matrix_2: np.ndarray) -> np.ndarray:\n    selected_solution = max(archive, key=lambda x: (x[1][0] + x[1][1]) / 2)[0].copy()\n\n    # Hybrid local search: Combine 2-opt with a novel edge-swap strategy\n    n = len(selected_solution)\n    new_solution = selected_solution.copy()\n\n    # Randomly select two segments to swap (avoiding trivial cases)\n    a, b = sorted(random.sample(range(1, n), 2))\n    c, d = sorted(random.sample(range(1, n), 2))\n\n    # Apply a novel edge-swap: reverse segments and reorder edges\n    new_solution[a:b] = np.flip(new_solution[a:b])\n    new_solution[c:d] = np.flip(new_solution[c:d])\n\n    # Ensure feasibility by checking for duplicates and fixing if needed\n    if len(np.unique(new_solution)) != n:\n        # If invalid, revert to a simpler 2-opt move\n        i, j = sorted(random.sample(range(1, n), 2))\n        new_solution[i:j] = np.flip(new_solution[i:j])\n\n    return new_solution\n\n",
+        "score": [
+            -0.9032423157374491,
+            0.20829319953918457
+        ]
+    },
+    {
+        "algorithm": "{This new algorithm selects the solution with the highest combined objective score from the archive, then applies a hybrid local search combining random segment reversals and edge flips to generate a neighbor solution while ensuring feasibility through validation checks.}",
+        "function": "def select_neighbor(archive: List[Tuple[np.ndarray, Tuple[float, float]]], instance: np.ndarray, distance_matrix_1: np.ndarray, distance_matrix_2: np.ndarray) -> np.ndarray:\n    selected_solution = max(archive, key=lambda x: (x[1][0] * 0.7 + x[1][1] * 0.3))[0].copy()\n\n    n = len(selected_solution)\n    new_solution = selected_solution.copy()\n\n    # Randomly select two segments with different weights\n    a, b = sorted(random.sample(range(1, n), 2))\n    c, d = sorted(random.sample(range(1, n), 2))\n\n    # Apply weighted segment reversal\n    if random.random() < 0.6:\n        new_solution[a:b] = np.flip(new_solution[a:b])\n    else:\n        new_solution[c:d] = np.flip(new_solution[c:d])\n\n    # Apply edge flip with probability\n    if random.random() < 0.3:\n        i, j = sorted(random.sample(range(1, n), 2))\n        new_solution[i], new_solution[j] = new_solution[j], new_solution[i]\n\n    # Ensure feasibility\n    if len(np.unique(new_solution)) != n:\n        # Fallback to simple swap if invalid\n        i, j = sorted(random.sample(range(1, n), 2))\n        new_solution[i], new_solution[j] = new_solution[j], new_solution[i]\n\n    return new_solution\n\n",
+        "score": [
+            -1.036417945356567,
+            0.2145974040031433
+        ]
+    }
+]

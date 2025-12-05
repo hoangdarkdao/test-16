@@ -1,0 +1,18 @@
+[
+    {
+        "algorithm": "{}",
+        "function": "def select_neighbor(archive: List[Tuple[np.ndarray, Tuple[float, float]]], instance: np.ndarray, distance_matrix_1: np.ndarray, distance_matrix_2: np.ndarray) -> np.ndarray:\n    selected_solution = max(archive, key=lambda x: (x[1][0] + x[1][1]) / 2)[0].copy()\n\n    # Hybrid local search: Combine 2-opt with a novel edge-swap strategy\n    n = len(selected_solution)\n    new_solution = selected_solution.copy()\n\n    # Randomly select two segments to swap (avoiding trivial cases)\n    a, b = sorted(random.sample(range(1, n), 2))\n    c, d = sorted(random.sample(range(1, n), 2))\n\n    # Apply a novel edge-swap: reverse segments and reorder edges\n    new_solution[a:b] = np.flip(new_solution[a:b])\n    new_solution[c:d] = np.flip(new_solution[c:d])\n\n    # Ensure feasibility by checking for duplicates and fixing if needed\n    if len(np.unique(new_solution)) != n:\n        # If invalid, revert to a simpler 2-opt move\n        i, j = sorted(random.sample(range(1, n), 2))\n        new_solution[i:j] = np.flip(new_solution[i:j])\n\n    return new_solution\n\n",
+        "score": [
+            -0.9032423157374491,
+            0.20829319953918457
+        ]
+    },
+    {
+        "algorithm": "{A novel local search heuristic that intelligently selects a solution from the archive based on its potential for multi-objective improvement, then applies a hybrid edge-swapping and segment-shifting operator to generate a high-quality neighbor solution while ensuring feasibility.}",
+        "function": "def select_neighbor(archive: List[Tuple[np.ndarray, Tuple[float, float]]], instance: np.ndarray, distance_matrix_1: np.ndarray, distance_matrix_2: np.ndarray) -> np.ndarray:\n    \"\"\"\n    Select a promising solution from the archive and generate a neighbor solution from it.\n\n    Args:\n    archive: List of (solution, objective) pairs. Each solution is a numpy array of node IDs.\n             Each objective is a tuple of two float values (cost in each space).\n    instance: Numpy array of shape (N, 4). Each row corresponds to a node and contains its coordinates in two 2D spaces: (x1, y1, x2, y2).\n    distance_matrix_1: Distance matrix in the first objective space.\n    distance_matrix_2: Distance matrix in the second objective space.\n\n    Returns:\n    A new neighbor solution (numpy array).\n    \"\"\"\n    selected_idx = np.random.choice(len(archive), p=[1.0/len(archive) for _ in range(len(archive))])\n    base_solution = archive[selected_idx][0].copy()\n    new_solution = base_solution.copy()\n\n    # Hybrid local search: edge-swapping with segment shifting\n    n = len(base_solution)\n    i = np.random.randint(0, n)\n    j = np.random.randint(0, n)\n    while j == i or j == (i + 1) % n:\n        j = np.random.randint(0, n)\n\n    # Apply edge-swapping\n    new_solution[i], new_solution[j] = new_solution[j], new_solution[i]\n\n    # Apply segment shifting (move a random segment to a different position)\n    k = np.random.randint(0, n)\n    l = np.random.randint(0, n)\n    while k == l or abs(k - l) < 2:\n        l = np.random.randint(0, n)\n\n    segment = new_solution[min(k, l):max(k, l)]\n    new_solution = np.concatenate([\n        new_solution[:min(k, l)],\n        new_solution[max(k, l):],\n        segment\n    ])\n\n    # Ensure feasibility (no duplicates, all nodes visited)\n    if len(np.unique(new_solution)) != n:\n        # Fallback to simple edge-swapping if shifting causes duplicates\n        new_solution = base_solution.copy()\n        new_solution[i], new_solution[j] = new_solution[j], new_solution[i]\n\n    return new_solution\n\n",
+        "score": [
+            -0.981765734008441,
+            0.20783603191375732
+        ]
+    }
+]
