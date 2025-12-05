@@ -13,12 +13,12 @@ from pathlib import Path
 # ===================================================================
 INPUT_JSON_FILES = [
     #"test/samples_1~300.json",
-    "logs/momcts/tsp_semo/nhv_runtime_20/v10/samples/samples_1~300.json",
-    "logs/momcts/tsp_semo/nhv_runtime_20/v10/samples/samples_301~600.json",
+    #"logs/momcts/tsp_semo/nhv_runtime_20/v10/samples/samples_1~300.json",
+    #"logs/momcts/tsp_semo/nhv_runtime_20/v10/samples/samples_301~600.json",
     #"logs/momcts/tsp_semo/nhv_runtime_20/v20/samples/samples_1~300.json",
     #"logs/momcts/tsp_semo/nhv_runtime_20/v20/samples/samples_301~600.json",
-    #"logs/momcts/tsp_semo/nhv_runtime_20/v30/samples/samples_1~300.json",
-    #"logs/momcts/tsp_semo/nhv_runtime_20/v30/samples/samples_301~600.json",
+    "logs/momcts/tsp_semo/nhv_runtime_20/v30/samples/samples_1~300.json",
+    "logs/momcts/tsp_semo/nhv_runtime_20/v30/samples/samples_301~600.json",
     # "test/samples_301~600.json",
 ]
 
