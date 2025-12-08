@@ -1,4 +1,3 @@
-# test3.py – PHIÊN BẢN CUỐI CÙNG, CHẠY ĐÚNG VỚI LLM4AD
 import importlib
 import json
 import numpy as np
@@ -63,7 +62,7 @@ print("Import evaluation.py và get_instance.py thành công!\n")
 # ===================================================================
 # WORKER – ĐÃ SỬA ĐÚNG THEO LLM4AD
 # ===================================================================
-def worker(code_str, instances, ps, ref_point, queue):
+def worker(code_str, instances, ps, ref_point, capacity, queue):
     try:
         import random
         local_ns = {}
@@ -78,7 +77,8 @@ def worker(code_str, instances, ps, ref_point, queue):
             n_instance=len(instances),
             problem_size=ps,
             ref_point=np.array(ref_point),
-            eva=func
+            eva=func,
+            capacity=capacity
             # KHÔNG truyền fixed_ideal / fixed_nadir → đúng với llm4ad
         )
         queue.put([float(hv), float(t)])
@@ -111,7 +111,7 @@ if __name__ == '__main__':
             print(f"\n--- Size: {ps} ---")
 
             getter = inst_mod.GetData(cfg["n_inst"], ps)
-            instances = getter.generate_instances()
+            instances, capacity = getter.generate_instances()
             print(f"Đã tạo {cfg['n_inst']} instance cố định")
 
             for idx, entry in enumerate(data):
@@ -142,7 +142,7 @@ if __name__ == '__main__':
                 q = multiprocessing.Queue()
                 p = multiprocessing.Process(
                     target=worker,
-                    args=(code, instances, ps, cfg["ref"], q)
+                    args=(code, instances, ps, cfg["ref"], capacity, q)
                 )
                 p.start()
                 p.join(timeout=3600)
