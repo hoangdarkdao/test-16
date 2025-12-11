@@ -1,0 +1,190 @@
+import importlib
+import json
+import numpy as np
+import multiprocessing
+import time
+import warnings
+import sys
+from pathlib import Path
+
+# ===================================================================
+# CHỈ CẦN SỬA 2 DÒNG NÀY MỖI LẦN CHẠY
+# ===================================================================
+INPUT_JSON_FILES = [
+    "logs/momcts/bi_cvrp/nhv_runtime/v1/samples/samples_1~300.json",
+    "logs/momcts/bi_cvrp/nhv_runtime/v1/samples/samples_301~600.json",
+    # "test/samples_301~600.json",
+]
+
+PROBLEM = "bi_cvrp"  # bi_tsp | bi_kp | bi_cvrp
+
+# ===================================================================
+# CẤU HÌNH TỰ ĐỘNG
+# ===================================================================
+CONFIG = {
+    "bi_tsp":  {"eval": "llm4ad/task/optimization/bi_tsp_semo/evaluation.py",
+                "inst": "llm4ad/task/optimization/bi_tsp_semo/get_instance.py",
+                "sizes": [100], "n_inst": 4,  "ref": [1.1, 1.1]},
+    "bi_kp":   {"eval": "llm4ad/task/optimization/bi_kp/evaluation.py",
+                "inst": "llm4ad/task/optimization/bi_kp/get_instance.py",
+                "sizes": [100], "n_inst": 10, "ref": [1.1, 1.1]},
+    "bi_cvrp": {"eval": "llm4ad/task/optimization/bi_cvrp/evaluation.py",
+                "inst": "llm4ad/task/optimization/bi_cvrp/get_instance.py",
+                "sizes": [100], "n_inst": 5,  "ref": [1.1, 1.1]},
+}
+
+cfg = CONFIG[PROBLEM]
+print(f"ĐÁNH GIÁ CÔNG BẰNG: {PROBLEM.upper()}")
+print(f"Files: {INPUT_JSON_FILES}\n" + "="*80)
+
+# ===================================================================
+# IMPORT + PYTHONPATH
+# ===================================================================
+def import_mod(path):
+    path = Path(path).resolve()
+    if not path.exists():
+        raise FileNotFoundError(f"Không tìm thấy: {path}")
+    root = Path(__file__).parent.parent.resolve()
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+        print(f"PYTHONPATH: {root}")
+    spec = importlib.util.spec_from_file_location(path.stem, path)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[path.stem] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+eval_mod = import_mod(cfg["eval"])
+inst_mod = import_mod(cfg["inst"])
+print("Import evaluation.py và get_instance.py thành công!\n")
+
+# ===================================================================
+# WORKER – ĐÃ SỬA ĐÚNG THEO LLM4AD
+# ===================================================================
+def worker(code_str, instances, ref_point, capacity, queue):
+    try:
+        import random
+        local_ns = {}
+        exec(code_str, {"np": np, "random": random}, local_ns)
+        func = local_ns.get("select_neighbor")
+        if func is None:
+            raise NameError("Không tìm thấy hàm select_neighbor")
+
+        # CHỈ TRUYỀN NHỮNG GÌ evaluate() CHẤP NHẬN
+        hv, t = eval_mod.evaluate(
+            instance_data=instances,
+            n_instance=len(instances),
+            ref_point=np.array(ref_point),
+            capacity=capacity,
+            evaluate_func=func
+        )
+        queue.put([float(hv), float(t)])
+    except Exception as e:
+        import traceback
+        msg = f"Error: {type(e).__name__}: {e}\n{traceback.format_exc()}"
+        print(f"\n[DEBUG] {msg}")
+        queue.put(msg)
+
+# ===================================================================
+# MAIN
+# ===================================================================
+if __name__ == '__main__':
+    warnings.filterwarnings("ignore")
+    np.random.seed(42)
+
+    for json_file in INPUT_JSON_FILES:
+        path = Path(json_file)
+        if not path.exists():
+            print(f"Không tìm thấy: {path} → bỏ qua")
+            continue
+
+        print(f"\nĐANG XỬ LÝ: {path.name}")
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        results = {}
+
+        for ps in cfg["sizes"]:
+            print(f"\n--- Size: {ps} ---")
+
+            getter = inst_mod.GetData(cfg["n_inst"], ps)
+            instances, capacity = getter.generate_instances()
+            print(f"Đã tạo {cfg['n_inst']} instance cố định")
+
+            for idx, entry in enumerate(data):
+                hid = idx + 1
+                if "program" not in entry or not entry["program"].strip():
+                    continue
+
+                code = entry["program"]
+                # Sửa đổi tại dòng 127
+                algorithm_value = entry.get("algorithm")
+
+                # Kiểm tra nếu giá trị là None (hoặc là chuỗi rỗng sau khi strip() để an toàn hơn)
+                if not algorithm_value or not str(algorithm_value).strip():
+                    desc = "No name"
+                else:
+                    # Chuyển thành chuỗi (đề phòng giá trị là số hoặc object khác) rồi cắt
+                    desc = str(algorithm_value)[:90]
+
+                # Kiểm tra nếu giá trị là None (hoặc là chuỗi rỗng sau khi strip() để an toàn hơn)
+                if not algorithm_value or not str(algorithm_value).strip():
+                    desc = "No name"
+                else:
+                    # Chuyển thành chuỗi (đề phòng giá trị là số hoặc object khác) rồi cắt
+                    desc = str(algorithm_value)[:90]
+
+                print(f"Heuristic {hid:3d}: {desc}... ", end="", flush=True)
+
+                q = multiprocessing.Queue()
+                p = multiprocessing.Process(
+                    target=worker,
+                    args=(code, instances, cfg["ref"], capacity, q)
+                )
+                p.start()
+                p.join(timeout=3600)
+
+                if p.is_alive():
+                    p.terminate(); p.join()
+                    score = "TIMEOUT"
+                    print("TIMEOUT")
+                else:
+                    res = q.get()
+                    if isinstance(res, str):
+                        score = res.split("\n")[0]
+                        print("ERROR")
+                    else:
+                        hv, t = res
+                        score = [float(hv), float(t)]
+                        print(f"HV = {hv:.6f} | Time = {t:.1f}s")
+
+                results.setdefault(hid, {})[ps] = score
+
+        # LƯU KẾT QUẢ THEO CẤU TRÚC BẠN MUỐN: list các {"score": [hv, time]}
+        output_list = []
+        current_size = cfg["sizes"][0]  # 100 (int, giữ nguyên int)
+
+        for idx, entry in enumerate(data):
+            hid = idx + 1
+            if "program" not in entry or not entry["program"].strip():
+                # Nếu heuristic bị skip (không có program), vẫn thêm placeholder để giữ thứ tự
+                output_list.append({"score": None})
+                continue
+
+            # Lấy score đúng với key là int (current_size)
+            score_for_size = results.get(hid, {}).get(current_size, None)
+
+            if isinstance(score_for_size, list) and len(score_for_size) == 2:
+                hv, t = score_for_size
+                output_list.append({"score": [float(hv), float(t)]})
+            else:
+                # Bao gồm cả TIMEOUT, ERROR, hoặc không chạy
+                output_list.append({"score": None})
+
+        # Lưu file
+        out = path.stem + f"_FAIR_{PROBLEM.upper()}.json"
+        with open(out, "w", encoding="utf-8") as f:
+            json.dump(output_list, f, indent=4, ensure_ascii=False)
+        print(f"\nHOÀN TẤT → Đã lưu: {out} (danh sách {len(output_list)} heuristic)\n" + "-"*80)
+        
+    print("TẤT CẢ XONG! BẠN ĐÃ CÓ KẾT QUẢ CÔNG BẰNG NHẤT!")
