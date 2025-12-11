@@ -1,4 +1,3 @@
-# test3.py – PHIÊN BẢN CUỐI CÙNG, CHẠY ĐÚNG VỚI LLM4AD
 import importlib
 import json
 import numpy as np
@@ -12,12 +11,13 @@ from pathlib import Path
 # CHỈ CẦN SỬA 2 DÒNG NÀY MỖI LẦN CHẠY
 # ===================================================================
 INPUT_JSON_FILES = [
-    "logs/mpage/tsp_semo/nhv_runtime/v3/samples/samples_1~300.json",
+    "logs/momcts/bi_kp/nhv_runtime_20/v10/samples/samples_1~300.json",
+    "logs/momcts/bi_kp/nhv_runtime_20/v10/samples/samples_301~600.json",
     #"logs/nsga2/tsp_semo/nhv_runtime/v1/samples/samples_301~600.json",
     # "test/samples_301~600.json",
 ]
 
-PROBLEM = "bi_tsp"  # bi_tsp | bi_kp | bi_cvrp
+PROBLEM = "bi_kp"  # bi_tsp | bi_kp | bi_cvrp
 
 # ===================================================================
 # CẤU HÌNH TỰ ĐỘNG
@@ -26,9 +26,9 @@ CONFIG = {
     "bi_tsp":  {"eval": "llm4ad/task/optimization/bi_tsp_semo/evaluation.py",
                 "inst": "llm4ad/task/optimization/bi_tsp_semo/get_instance.py",
                 "sizes": [100], "n_inst": 4,  "ref": [1.1, 1.1]},
-    "bi_kp":   {"eval": "llm4ad/task/optimization/bi_kp_semo/evaluation.py",
-                "inst": "llm4ad/task/optimization/bi_kp_semo/get_instance.py",
-                "sizes": [200], "n_inst": 10, "ref": [1.1, 1.1]},
+    "bi_kp":   {"eval": "llm4ad/task/optimization/bi_kp/evaluation.py",
+                "inst": "llm4ad/task/optimization/bi_kp/get_instance.py",
+                "sizes": [100], "n_inst": 10, "ref": [1.1, 1.1]},
     "bi_cvrp": {"eval": "llm4ad/task/optimization/bi_cvrp_semo/evaluation.py",
                 "inst": "llm4ad/task/optimization/bi_cvrp_semo/get_instance.py",
                 "sizes": [100], "n_inst": 5,  "ref": [1.1, 1.1]},
@@ -62,7 +62,7 @@ print("Import evaluation.py và get_instance.py thành công!\n")
 # ===================================================================
 # WORKER – ĐÃ SỬA ĐÚNG THEO LLM4AD
 # ===================================================================
-def worker(code_str, instances, ps, ref_point, queue):
+def worker(code_str, instances, ps, ref_point, capacity, queue):
     try:
         import random
         local_ns = {}
@@ -77,7 +77,8 @@ def worker(code_str, instances, ps, ref_point, queue):
             n_instance=len(instances),
             problem_size=ps,
             ref_point=np.array(ref_point),
-            eva=func
+            eva=func,
+            capacity=capacity
             # KHÔNG truyền fixed_ideal / fixed_nadir → đúng với llm4ad
         )
         queue.put([float(hv), float(t)])
@@ -110,7 +111,7 @@ if __name__ == '__main__':
             print(f"\n--- Size: {ps} ---")
 
             getter = inst_mod.GetData(cfg["n_inst"], ps)
-            instances = getter.generate_instances()
+            instances, capacity = getter.generate_instances()
             print(f"Đã tạo {cfg['n_inst']} instance cố định")
 
             for idx, entry in enumerate(data):
@@ -141,7 +142,7 @@ if __name__ == '__main__':
                 q = multiprocessing.Queue()
                 p = multiprocessing.Process(
                     target=worker,
-                    args=(code, instances, ps, cfg["ref"], q)
+                    args=(code, instances, ps, cfg["ref"], capacity, q)
                 )
                 p.start()
                 p.join(timeout=3600)

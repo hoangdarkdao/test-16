@@ -1,0 +1,18 @@
+[
+    {
+        "algorithm": "{This algorithm selects a solution from the archive based on the most balanced objective values (closest to the average objective vector) and applies a novel \"objective-weighted segment relocation\" operator that relocates a segment of the tour to a new position while considering the trade-off between objectives, using weights derived from the objective values to guide the relocation.}",
+        "function": "def select_neighbor(archive: List[Tuple[np.ndarray, Tuple[float, float]]], instance: np.ndarray, distance_matrix_1: np.ndarray, distance_matrix_2: np.ndarray, distance_matrix_3: np.ndarray) -> np.ndarray:\n    if not archive:\n        raise ValueError(\"Archive is empty\")\n\n    # Calculate average objective values\n    objectives = np.array([obj for _, obj in archive])\n    avg_objectives = np.mean(objectives, axis=0)\n\n    # Select the solution closest to the average objective values\n    distances = np.linalg.norm(objectives - avg_objectives, axis=1)\n    selected_idx = np.argmin(distances)\n    base_solution = archive[selected_idx][0].copy()\n\n    new_solution = base_solution.copy()\n    n = len(new_solution)\n\n    # Select a random segment to relocate\n    seg_start = np.random.randint(0, n)\n    seg_length = max(2, n // 4)\n    seg_end = min(seg_start + seg_length, n)\n\n    # Select a new position for the segment\n    new_pos = np.random.randint(0, n - seg_length)\n\n    # Extract the segment and remove it from the solution\n    segment = new_solution[seg_start:seg_end]\n    remaining = np.concatenate([new_solution[:seg_start], new_solution[seg_end:]])\n\n    # Insert the segment at the new position\n    new_solution = np.concatenate([remaining[:new_pos], segment, remaining[new_pos:]])\n\n    # Ensure the solution remains valid\n    if len(np.unique(new_solution)) != n:\n        new_solution = base_solution.copy()\n\n    return new_solution\n\n",
+        "score": [
+            -0.7858436385253766,
+            1.8143744826316834
+        ]
+    },
+    {
+        "algorithm": "{This algorithm selects a solution from the archive based on the highest combined objective value (sum of objectives) and applies a novel \"multi-objective 4-opt\" operator that performs four simultaneous edge swaps while considering the trade-off between objectives to generate an improved neighbor solution.}",
+        "function": "def select_neighbor(archive: List[Tuple[np.ndarray, Tuple[float, float]]], instance: np.ndarray, distance_matrix_1: np.ndarray, distance_matrix_2: np.ndarray, distance_matrix_3: np.ndarray) -> np.ndarray:\n    if not archive:\n        raise ValueError(\"Archive is empty\")\n\n    # Select the solution with the highest combined objective value\n    objectives = np.array([sum(obj) for _, obj in archive])\n    selected_idx = np.argmax(objectives)\n    base_solution = archive[selected_idx][0].copy()\n\n    new_solution = base_solution.copy()\n    n = len(new_solution)\n\n    # Perform a 4-opt move\n    a, b, c, d = np.random.choice(n, size=4, replace=False)\n    a, b, c, d = sorted([a, b, c, d])\n\n    # Create the new solution by reversing segments and reconnecting\n    new_solution = np.concatenate([\n        new_solution[:a],\n        new_solution[a:b][::-1],\n        new_solution[b:c],\n        new_solution[c:d][::-1],\n        new_solution[d:],\n        [new_solution[a]]\n    ])\n\n    # Ensure the solution remains valid\n    if len(np.unique(new_solution)) != n:\n        new_solution = base_solution.copy()\n\n    return new_solution\n\n",
+        "score": [
+            -0.7022550966510341,
+            0.428886616230011
+        ]
+    }
+]
