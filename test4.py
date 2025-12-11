@@ -11,8 +11,7 @@ from pathlib import Path
 # CHỈ CẦN SỬA 2 DÒNG NÀY MỖI LẦN CHẠY
 # ===================================================================
 INPUT_JSON_FILES = [
-    "logs/momcts/bi_kp/nhv_runtime_20/v10/samples/samples_1~300.json",
-    "logs/momcts/bi_kp/nhv_runtime_20/v10/samples/samples_301~600.json",
+    "logs/mpage/tsp_semo/nhv_runtime/v3/samples/samples_1~300.json",
     #"logs/nsga2/tsp_semo/nhv_runtime/v1/samples/samples_301~600.json",
     # "test/samples_301~600.json",
 ]
