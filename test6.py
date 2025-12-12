@@ -12,8 +12,8 @@ from pathlib import Path
 # CHỈ CẦN SỬA 2 DÒNG NÀY MỖI LẦN CHẠY
 # ===================================================================
 INPUT_JSON_FILES = [
-    "logs/momcts/tri_tsp/nhv_runtime_20/v1/samples/samples_1~300.json",
-    "logs/momcts/tri_tsp/nhv_runtime_20/v1/samples/samples_301~600.json",
+    "logs/momcts/tri_tsp/nhv_runtime_20/v2/samples/samples_1~300.json",
+    "logs/momcts/tri_tsp/nhv_runtime_20/v2/samples/samples_301~600.json",
 ]
 
 PROBLEM = "tri_tsp"  # chỉ hỗ trợ bi_kp trong file này
@@ -186,4 +186,5 @@ if __name__ == '__main__':
             json.dump(output_list, f, indent=4, ensure_ascii=False)
         print(f"\nHOÀN TẤT → Đã lưu: {out} (danh sách {len(output_list)} heuristic)\n" + "-"*80)
         
+
     print("TẤT CẢ XONG! BẠN ĐÃ CÓ KẾT QUẢ CÔNG BẰNG NHẤT!")
