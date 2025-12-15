@@ -13,7 +13,7 @@ class GetData():
             values_obj2 = np.random.rand(self.n_items)
             if 50 <= self.n_items < 100:
                 capacity = 12.5
-            elif 100 <= self.n_items <= 200:
+            elif 100 <= self.n_items <= 250:
                 capacity = 25
             else:
                 raise ValueError("Number of items must be between 50 and 200.")
