@@ -11,8 +11,8 @@ from pathlib import Path
 # CHỈ CẦN SỬA 2 DÒNG NÀY MỖI LẦN CHẠY
 # ===================================================================
 INPUT_JSON_FILES = [
-    "logs/momcts/bi_cvrp/nhv_runtime/v3/samples/samples_1~300.json",
-    "logs/momcts/bi_cvrp/nhv_runtime/v3/samples/samples_301~600.json",
+    "logs/momcts/bi_cvrp/nhv_runtime/v1/samples/samples_1~300.json",
+    "logs/momcts/bi_cvrp/nhv_runtime/v1/samples/samples_301~600.json",
     # "test/samples_301~600.json",
 ]
 
@@ -189,6 +189,7 @@ if __name__ == '__main__':
         
 
     print("TẤT CẢ XONG! BẠN ĐÃ CÓ KẾT QUẢ CÔNG BẰNG NHẤT!")
+
 
 
 
