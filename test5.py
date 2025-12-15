@@ -11,8 +11,8 @@ from pathlib import Path
 # CHỈ CẦN SỬA 2 DÒNG NÀY MỖI LẦN CHẠY
 # ===================================================================
 INPUT_JSON_FILES = [
-    "logs/mpage/bi_cvrp/nhv_runtime/v3/samples/samples_1~300.json",
-    "logs/mpage/bi_cvrp/nhv_runtime/v3/samples/samples_301~600.json",
+    "logs/momcts/bi_cvrp/nhv_runtime/v1/samples/samples_1~300.json",
+    "logs/momcts/bi_cvrp/nhv_runtime/v1/samples/samples_301~600.json",
     # "test/samples_301~600.json",
 ]
 
@@ -30,7 +30,7 @@ CONFIG = {
                 "sizes": [100], "n_inst": 10, "ref": [1.1, 1.1]},
     "bi_cvrp": {"eval": "llm4ad/task/optimization/bi_cvrp/evaluation.py",
                 "inst": "llm4ad/task/optimization/bi_cvrp/get_instance.py",
-                "sizes": [100], "n_inst": 5,  "ref": [1.1, 1.1]},
+                "sizes": [200], "n_inst": 5,  "ref": [1.1, 1.1]},
 }
 
 cfg = CONFIG[PROBLEM]
@@ -189,6 +189,7 @@ if __name__ == '__main__':
         
 
     print("TẤT CẢ XONG! BẠN ĐÃ CÓ KẾT QUẢ CÔNG BẰNG NHẤT!")
+
 
 
 
