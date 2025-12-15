@@ -25,6 +25,8 @@ class GetData():
                 capacity = 40
             elif 70 <= self.n_customers <= 100:
                 capacity = 50
+            elif 100 <= self.n_customers <= 200:
+                capacity = 90 
             else:
                 raise ValueError("Number of customers must be between 20 and 100.")
 
