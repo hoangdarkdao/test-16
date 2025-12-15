@@ -11,7 +11,7 @@ from pathlib import Path
 # CHỈ CẦN SỬA 2 DÒNG NÀY MỖI LẦN CHẠY
 # ===================================================================
 INPUT_JSON_FILES = [
-    "logs/mpage/tsp_semo/nhv_runtime/v3/samples/samples_1~300.json",
+    "logs/momcts/bi_kp/nhv_runtime/v1/samples/samples_1~300.json",
     #"logs/nsga2/tsp_semo/nhv_runtime/v1/samples/samples_301~600.json",
     # "test/samples_301~600.json",
 ]
@@ -27,7 +27,7 @@ CONFIG = {
                 "sizes": [100], "n_inst": 4,  "ref": [1.1, 1.1]},
     "bi_kp":   {"eval": "llm4ad/task/optimization/bi_kp/evaluation.py",
                 "inst": "llm4ad/task/optimization/bi_kp/get_instance.py",
-                "sizes": [100], "n_inst": 10, "ref": [1.1, 1.1]},
+                "sizes": [200], "n_inst": 10, "ref": [1.1, 1.1]},
     "bi_cvrp": {"eval": "llm4ad/task/optimization/bi_cvrp_semo/evaluation.py",
                 "inst": "llm4ad/task/optimization/bi_cvrp_semo/get_instance.py",
                 "sizes": [100], "n_inst": 5,  "ref": [1.1, 1.1]},
