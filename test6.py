@@ -24,7 +24,7 @@ PROBLEM = "bi_tsp"  # chỉ hỗ trợ bi_kp trong file này
 CONFIG = {
     "bi_tsp":  {"eval": "llm4ad/task/optimization/bi_tsp_semo/evaluation.py",
                 "inst": "llm4ad/task/optimization/bi_tsp_semo/get_instance.py",
-                "sizes": [100], "n_inst": 4,  "ref": [1.1, 1.1]},
+                "sizes": [200], "n_inst": 4,  "ref": [1.1, 1.1]},
     "bi_kp":   {"eval": "llm4ad/task/optimization/bi_kp/evaluation.py",
                 "inst": "llm4ad/task/optimization/bi_kp/get_instance.py",
                 "sizes": [100], "n_inst": 10, "ref": [1.1, 1.1]},
@@ -188,6 +188,7 @@ if __name__ == '__main__':
         
 
     print("TẤT CẢ XONG! BẠN ĐÃ CÓ KẾT QUẢ CÔNG BẰNG NHẤT!")
+
 
 
 
