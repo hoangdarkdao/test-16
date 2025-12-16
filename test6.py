@@ -12,11 +12,11 @@ from pathlib import Path
 # CHỈ CẦN SỬA 2 DÒNG NÀY MỖI LẦN CHẠY
 # ===================================================================
 INPUT_JSON_FILES = [
-    "logs/nsga2/tri_tsp/nhv_runtime_20/v3/samples/samples_1~300.json",
-    "logs/nsga2/tri_tsp/nhv_runtime_20/v3/samples/samples_301~600.json",
+    "logs/momcts/tsp_semo/nhv_runtime_20/v10/samples/samples_1~300.json",
+    "logs/momcts/tsp_semo/nhv_runtime_20/v10/samples/samples_301~600.json",
 ]
 
-PROBLEM = "tri_tsp"  # chỉ hỗ trợ bi_kp trong file này
+PROBLEM = "bi_tsp"  # chỉ hỗ trợ bi_kp trong file này
 
 # ===================================================================
 # CẤU HÌNH TỰ ĐỘNG
@@ -188,6 +188,7 @@ if __name__ == '__main__':
         
 
     print("TẤT CẢ XONG! BẠN ĐÃ CÓ KẾT QUẢ CÔNG BẰNG NHẤT!")
+
 
 
 
